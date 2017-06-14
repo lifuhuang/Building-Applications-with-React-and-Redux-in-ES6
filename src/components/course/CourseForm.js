@@ -1,6 +1,6 @@
 import React from 'react';
 import TextInput from '../common/TextInput';
-import SelctInput from '../common/SelectInput';
+import SelectInput from '../common/SelectInput';
 
 const CourseForm = ({course, allAuthors, onSave, onChange, loading, errors}) => {
   return (
@@ -13,7 +13,7 @@ const CourseForm = ({course, allAuthors, onSave, onChange, loading, errors}) => 
         onChange={onChange}
         error={errors.title}/>
 
-      <SelctInput
+      <SelectInput
         name="authorId"
         label="Author"
         value={course.authorId}
@@ -35,7 +35,7 @@ const CourseForm = ({course, allAuthors, onSave, onChange, loading, errors}) => 
         value={course.length}
         onChange={onChange}
         error={errors.length}/>
-
+      <br></br>
       <input
         type="submit"
         disabled={loading}
