@@ -5,44 +5,57 @@ import * as courseActions from '../../actions/courseActions';
 import CourseForm from './CourseForm';
 
 class ManageCoursePage extends React.Component {
-  constructor(props, context) { //what is context used for?
+  constructor(props, context) { //Question: what is context used for?
     super(props, context);
     this.state = {
       course: Object.assign({}, this.props.course),
       errors: {}
     };
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSave = this.handleSave.bind(this);
+    this.updateCourseState = this.updateCourseState.bind(this);
+    this.saveCourse = this.saveCourse.bind(this);
   }
 
-  handleSave() {
-    alert("saved");
+  saveCourse(event) {
+    event.preventDefault();
+    this.props.actions.saveCourse(this.state.course);
   }
 
-  handleChange() {
-    alert("changed");
+  updateCourseState(event) {
+    const field = event.target.name; //Question: what does this do?
+    let course = this.state.course;
+    course[field] = event.target.value;
+    return this.setState({course:course});
   }
+
 
   render() {
     return(
       <CourseForm
-        allAuthors={[]}
+        allAuthors={this.props.authors}
         course={this.state.course}
         errors={this.state.errors}
-        onSave={this.handleSave}
-        onChange={this.handleChange}/>
+        onSave={this.saveCourse}
+        onChange={this.updateCourseState}/>
     );
   }
 }
 
-ManageCoursePage.propTypes = { //Question: shouldn't this be ".propTypes"?
-  course: PropTypes.object.isRequired
+ManageCoursePage.propTypes = {
+  course: PropTypes.object.isRequired,
+  authors: PropTypes.array.isRequired,
+  actions: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state, ownProps) {
-  let course = {id: "", watchHref: "", title: "", authorId: "", length: "", category: ""};
+  const authorsFormattedForDropdown = state.authors.map(author => {
+    return {
+      value: author.id,
+      text: author.firstName + " " + author.lastName
+    };
+  });
   return {
-    course: course
+    course: {id: '', watchHref: '', title: '', authorId: '', length: '', category: ''},
+    authors: authorsFormattedForDropdown
   };
 }
 
