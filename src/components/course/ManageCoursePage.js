@@ -3,21 +3,40 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as courseActions from '../../actions/courseActions';
 import CourseForm from './CourseForm';
+import toastr from 'toastr';
 
 class ManageCoursePage extends React.Component {
   constructor(props, context) { //Question: what is context used for?
     super(props, context);
     this.state = {
       course: Object.assign({}, this.props.course),
-      errors: {}
+      errors: {},
+      saving: false
     };
     this.updateCourseState = this.updateCourseState.bind(this);
     this.saveCourse = this.saveCourse.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.course.id !== nextProps.course.id) {
+      this.setState({course: Object.assign({}, nextProps.course)});
+    }
+  }
+
   saveCourse(event) {
     event.preventDefault();
-    this.props.actions.saveCourse(this.state.course);
+    this.setState({saving: true});
+    this.props.actions.saveCourse(this.state.course)
+      .then(() => this.redirect())
+      .catch(error => {
+        toastr.error(error);
+        this.setState({saving: false});
+      });
+  }
+
+  redirect() {
+    this.setState( {saving: false});
+    toastr.success("Course Saved");
     this.context.router.push("/courses");
   }
 
@@ -36,7 +55,8 @@ class ManageCoursePage extends React.Component {
         course={this.state.course}
         errors={this.state.errors}
         onSave={this.saveCourse}
-        onChange={this.updateCourseState}/>
+        onChange={this.updateCourseState}
+        saving={this.state.saving}/>
     );
   }
 }
@@ -51,16 +71,28 @@ ManageCoursePage.contextTypes = {
   router: PropTypes.object
 };
 
-function mapStateToProps(state, ownProps) {
+function getCourseById(courses, id) {
+  const course = courses.filter(course => course.id == id);
+  if (course) return course[0];
+  return null;
+}
 
+function mapStateToProps(state, ownProps) {
+  const courseId = ownProps.params.id;
+  let course = {id: '', watchHref: '', title: '', authorId: '', length: '', category: ''};
+
+  if (courseId && state.courses.length > 0) {
+    course = getCourseById(state.courses, courseId);
+  }
   const authorsFormattedForDropdown = state.authors.map(author => {
     return {
       value: author.id,
       text: author.firstName + " " + author.lastName
     };
   });
+
   return {
-    course: {id: '', watchHref: '', title: '', authorId: '', length: '', category: ''},
+    course: course,
     authors: authorsFormattedForDropdown
   };
 }
